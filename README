@@ -1,0 +1,200 @@
+/*
+ * ParJedi: Parallelization of JEDI State Assignment of FSMs
+ * Copyright (C) 1997-2004  David A. Bader and Kamesh Madduri
+ *
+ * Authors:             David A. Bader
+ *                      Kamesh Madduri
+ */
+
+
+
+JEDI 
+______
+
+JEDI is a state assignment program for Finite State Machines
+distributed with SIS, a logic synthesis and optimization tool
+developed by Berkeley. The license for the sequential code is as
+follows. 
+
+-----------------------------------------------------------------------
+
+Copyright © 1996-2004 The Regents of the University of California.
+All Rights Reserved.
+
+Permission to use, copy, modify, and distribute this software and its
+documentation for educational, research and non-profit purposes,
+without fee, and without a written agreement is hereby granted,
+provided that the above copyright notice, this paragraph and the
+following three paragraphs appear in all copies.
+
+Permission to incorporate this software into commercial products may
+be obtained by contacting the University of California. 
+
+This software program and documentation are copyrighted by The Regents
+of the University of California. The software program and
+documentation are supplied "as is", without any accompanying services
+from The Regents. The Regents does not warrant that the operation of
+the program will be uninterrupted or error-free. The end-user
+understands that the program was developed for research purposes and
+is advised not to rely exclusively on the program for any reason.
+
+IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY
+FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES,
+INCLUDING LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND
+ITS DOCUMENTATION, EVEN IF THE UNIVERSITY OF CALIFORNIA HAS BEEN
+ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. THE UNIVERSITY OF
+CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON AN "AS IS"
+BASIS, AND THE UNIVERSITY OF CALIFORNIA HAS NO OBLIGATIONS TO PROVIDE
+MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+-----------------------------------------------------------------------
+
+The source code of JEDI can be downloaded from the Berkeley Design
+Warehouse - Software section: 
+http://www-cad.eecs.berkeley.edu/Software/software.html
+
+Alternately, slighty modified versions of the code can be obtained from 
+
+1) http://www.cs.ucla.edu/classes/CS258G/sis-1.3/jedi/
+
+2) http://www.tud.ttu.ee/~t992514/cad/jedi.zip
+
+The source code from the above two sites is easier to compile. The
+original JEDI code is slightly outdated and might give some problems.
+
+Sample FSMs in KISS format and the MCNC FSM benchmark suite can also
+be downloaded from the Berkeley link.
+
+MV-SIS or Multi-valued Multi level SIS  - the successor of SIS - can
+be downloaded from
+http://www-cad.eecs.berkeley.edu/Respep/Research/mvsis/ 
+ 
+MV SIS has limited features and is still under development. State
+assignment programs have not been integrated into it yet. However, it
+can be used for logic optimization and is much more user friendly and
+advanced than SIS.
+
+
+Modifications in the sequential code
+_____________________________________
+
+Minor modifications have been made in a lot of files but none of them
+affect the basic functionality of the code.
+
+
+Compiling the code
+___________________
+
+To compile the parallel code, the path for SIMPLE needs to be
+specified in the Makefile.orig. The code can be compiled by just using
+the GNU make (gmake) command.
+
+
+Usage
+______
+
+parjedi -t <No. of threads> -- <Type of encoding> <Input file>
+
+ex: parjedi -t 4 -- i fsm/lion4.kiss2
+
+Type of encoding:
+
+i : Input dominant
+o : Output dominant
+c : Coupled 
+y : variation
+
+r : random
+s : sequential
+g : cluster encoding
+h : one-hot encoing
+
+Only the input, output, cluster and variation encodings are
+computationally intensive
+
+The other four types of encoding are trivial and can be used for
+comparison purposes.
+
+Input file:
+
+The input file must be specified in the KISS format.Some sample FSMs
+and the MCNC benchmark suite files are stored in the FSM sub
+directory.
+
+Output :
+
+The output is written in PLA format into the output.pla file. It is
+also written into a BLIF (Berkeley Logic Interchange Format) file in
+the root directory.
+
+Files in the JEDI package 
+__________________________
+
+The files included in the sequential distribution are -
+
+jedi.c    - main file
+read.c    - reads the input file and creates the data structure
+write.c   - output is written in pla format
+cluster.c - cluster encoding
+hot.c     - one hot encoding
+random.c  - random encoding
+weights.c - gain computation
+rp.c      - simulated annealing 
+hill.c    - simulated annealing
+util.c
+strsav.c  - perform minor functions 
+getopt.c
+expand.c
+
+Parallel code 
+______________
+
+simple_main.c - the main file
+parse.c - modifications for command line execution of JEDI
+
+Modified files:
+
+jedi.c       
+weights.c    - Gain computation parallelized
+rp.c, hill.c - Simulated annealing parallelized
+cluster.c    - parallel implementation of cluster encoding 
+
+read.c and write.c are slightly modified but are run on one thread.
+
+
+Running MVSIS
+______________
+
+The output file in PLA format can be read by MVSIS and logic
+optimization can be done to get the final literal count. 
+To use the default shortcuts, create a file '.mvsisrc' in the root
+directory and add the paths: 
+set lib_path <MVSIS home dir path>/share
+set open_path <MVSIS home dir path>/examples
+
+Some useful commands are
+                  Usage            Details
+
+help                               All the commands are listed
+
+read_pla          rl output.pla    The STG is loaded
+
+print             p                prints the output logic functions 
+
+print_stats       ps               Gives the literal count of the output
+                                   and next state logic, the implementation 
+                                   level, the number of common cubes and
+                                   other useful stats
+
+print_io          pio              prints the input and output variables
+                                 
+
+fullsimp          fs               Optimizes the output logic 
+                                   fs -h for more details
+              
+fxu               fxu              tries  to extract good common factors and 
+                                   create new nodes 
+
+For more retails, refer the MVSIS user's manual.
+_________________________________

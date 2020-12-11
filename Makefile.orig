@@ -1,0 +1,8 @@
+EXECS = parjedi
+
+SIMPLE_DIR = $(HOME)/simple
+
+OPT         = -O$(O_LEVEL)
+# OPT       = -g
+
+include $(SIMPLE_DIR)/Makefile.smp.mk
